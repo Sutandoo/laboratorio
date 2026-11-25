@@ -75,6 +75,12 @@ SESSION_COOKIE=laboratorio_session
 
 La migración original del starter kit crea `users`, `password_reset_tokens` y `sessions`. La migración `login_audits` añade la auditoría con relación a `users`. Ejecuta `php artisan migrate` una sola vez contra la base central; Page1 y Page2 no deben mantener esquemas ni sesiones locales distintos.
 
+## Autenticación en dos pasos
+
+Cada usuario puede activarla en **Settings → Two-factor authentication**. La clave se agrega manualmente en Google Authenticator o en cualquier app compatible con TOTP, y se confirma con un código antes de quedar activa. Desde entonces, el login pide el código TOTP o uno de los códigos de recuperación de un solo uso.
+
+La migración `2026_11_24_000000_add_two_factor_authentication_to_users_table` agrega los datos necesarios. La clave TOTP y los códigos de recuperación se guardan cifrados con `APP_KEY`; Page1 y Page2 deben usar el mismo `APP_KEY`, igual que con las sesiones compartidas. Los códigos de recuperación se muestran al activar la función: guárdalos fuera de la aplicación.
+
 ## Identidad de Page1 y Page2
 
 ```dotenv

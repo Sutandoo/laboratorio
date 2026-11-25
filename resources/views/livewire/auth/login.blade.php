@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -10,7 +11,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('components.layouts.auth')] class extends Component {
+new #[Layout('components.layouts.auth')] class extends Component
+{
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -28,7 +30,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        Session::forget(['two_factor_login_user_id', 'two_factor_login_remember']);
+
+        if (! Auth::validate(['email' => $this->email, 'password' => $this->password])) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -36,7 +40,21 @@ new #[Layout('components.layouts.auth')] class extends Component {
             ]);
         }
 
+        $user = User::query()->where('email', $this->email)->firstOrFail();
         RateLimiter::clear($this->throttleKey());
+
+        if ($user->two_factor_confirmed_at !== null) {
+            Session::put([
+                'two_factor_login_user_id' => $user->getKey(),
+                'two_factor_login_remember' => $this->remember,
+            ]);
+
+            $this->redirectRoute('login.two-factor', navigate: true);
+
+            return;
+        }
+
+        Auth::login($user, $this->remember);
         Session::regenerate();
 
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
