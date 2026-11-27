@@ -12,6 +12,10 @@
                     </span>
                     <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
                 </a>
+                <div class="rounded-xl border-2 border-emerald-500 bg-emerald-50 px-4 py-3 text-center dark:bg-emerald-950">
+                    <p class="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-300">Estás en</p>
+                    <p class="mt-1 text-3xl font-black text-emerald-900 dark:text-emerald-100">{{ config('laboratorio.server_label') }}</p>
+                </div>
                 <div class="flex flex-col gap-6">
                     {{ $slot }}
                 </div>
